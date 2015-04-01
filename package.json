@@ -1,0 +1,26 @@
+{
+  "name": "tiny-datetime",
+  "version": "0.1.0",
+  "description": "Small library for storing and comparing times and dates.",
+  "main": "tiny-datetime.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node_modules/.bin/jasmine-node --matchAll tests/tiny-datetime_tests.js"
+  },
+  "repository": {
+    "type": "mercurial",
+    "url": "https://bitbucket.org/colinbate/tiny-datetime"
+  },
+  "keywords": [
+    "date",
+    "time",
+    "datetime"
+  ],
+  "devDependencies": {
+    "jasmine-node": "~2.0.0"
+  },
+  "author": "Colin Bate <colin@colinbate.com>",
+  "license": "MIT"
+}
