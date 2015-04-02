@@ -1,44 +1,54 @@
-var datetimeArrays = require('../datetime-arrays');
-describe('datetime arrays', function () {
+var tiny = require('../tiny-datetime');
+describe('tiny datetime api', function () {
   'use strict';
   it('has a time object', function () {
-    expect(datetimeArrays.time).toBeTruthy();
+    expect(tiny.time).toBeTruthy();
   });
-  it('has a dateArray object', function () {
-    expect(datetimeArrays.dateArray).toBeTruthy();
+  it('has a date object', function () {
+    expect(tiny.date).toBeTruthy();
   });
   it('has a toDate function', function () {
-    expect(datetimeArrays.toDate).toBeTruthy();
-    expect(typeof datetimeArrays.toDate).toBe('function');
+    expect(tiny.toDate).toBeTruthy();
+    expect(typeof tiny.toDate).toBe('function');
   });
   describe('time', function () {
-    describe('toString()', function () {
+    describe('parse()', function () {
       it('returns hours, minutes, seconds as provided', function () {
-        var time = [11, 32, 45];
-        expect(datetimeArrays.time.toString(time)).toBe('11:32:45');
+        var time = '11:32:45';
+        expect(tiny.time.parse(time)).toBe('11:32:45');
       });
-      it('returns hours, minutes and seconds padded to two digits', function () {
-        expect(datetimeArrays.time.toString([1, 2, 3])).toBe('01:02:03');
-        expect(datetimeArrays.time.toString([1, 22, 3])).toBe('01:22:03');
-        expect(datetimeArrays.time.toString([11, 2, 3])).toBe('11:02:03');
-        expect(datetimeArrays.time.toString([1, 2, 33])).toBe('01:02:33');
+      it('returns hours padded to two digits', function () {
+        expect(tiny.time.parse('1:22:33')).toBe('01:22:33');
       });
       it('omits seconds if they are zero', function () {
-        expect(datetimeArrays.time.toString([12, 2, 0])).toBe('12:02');
+        expect(tiny.time.parse('12:02:00')).toBe('12:02');
       });
       it('outputs in 24h time', function () {
-        expect(datetimeArrays.time.toString([16, 12, 0])).toBe('16:12');
+        expect(tiny.time.parse('16:12:00')).toBe('16:12');
+      });
+      it('output null when input is invalid', function () {
+        expect(tiny.time.parse('34:00:00')).toBeNull();
+      });
+      it('handles AM/PM', function () {
+        expect(tiny.time.parse('7:09am')).toBe('07:09');
+        expect(tiny.time.parse('7:09 a')).toBe('07:09');
+        expect(tiny.time.parse('7:09:45 am')).toBe('07:09:45');
+        expect(tiny.time.parse('7:09:45a')).toBe('07:09:45');
+        expect(tiny.time.parse('7:09 pm')).toBe('19:09');
+        expect(tiny.time.parse('7:09p')).toBe('19:09');
+        expect(tiny.time.parse('7:09:45 p')).toBe('19:09:45');
+        expect(tiny.time.parse('7:09:45pm')).toBe('19:09:45');
       });
     });
   });
 
   describe('toDate()', function () {
-    it('returns null when first param invalid dateArray', function () {
-      expect(datetimeArrays.toDate([])).toBeNull();
+    it('returns null when first param invalid date', function () {
+      expect(tiny.toDate('')).toBeNull();
     });
-    describe('with valid dateArray as first param', function () {
-      var arr = [1982, 5, 9];
-      var result = datetimeArrays.toDate(arr);
+    describe('with valid date as first param', function () {
+      var date = '1982-05-09';
+      var result = tiny.toDate(date);
 
       it('returns a JS Date object', function () {
         expect(Object.prototype.toString.call(result)).toBe('[object Date]');
@@ -54,7 +64,7 @@ describe('datetime arrays', function () {
       });
 
       describe('and invalid second param', function () {
-        var result = datetimeArrays.toDate(arr, []);
+        var result = tiny.toDate(date, '');
 
         it('maps to midnight on that day', function () {
           expect(result.getFullYear()).toBe(1982);
@@ -67,8 +77,8 @@ describe('datetime arrays', function () {
       });
 
       describe('and time array as second param', function () {
-        var time = [10, 18, 0];
-        var result = datetimeArrays.toDate(arr, time);
+        var time = '10:18:00';
+        var result = tiny.toDate(date, time);
 
         it('maps to specified time on that day', function () {
           expect(result.getFullYear()).toBe(1982);

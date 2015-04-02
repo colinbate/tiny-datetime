@@ -15,20 +15,6 @@
 }
 (this, function() {
   'use strict';
-  /*
-  Time   := "Hour:MinPad:SecPad"
-  Date   := "Year-MonPad-DayPad"
-  Hour   := 0..23
-  Min    := 0..59
-  MinPad := "0" + Min(0-9) | Min(10-59)
-  Second := 0..59
-  SecPad := "0" + Second(0-9) | Second(10-59)
-  Year   := 1..9999
-  Month  := 1..12
-  MonPad := "0" + Month(0-9) | Month(10-12)
-  Day    := 1..31
-  DayPad := "0" + Day(0-9) | Day(10-31)
-  */
   var timeRegex = /^(\d{1,2}):(\d\d)(:(\d\d))?\s*(([aApP])([mM])?)?$/,
       dateLikeRegex = /^\d{1,4}-\d?\d-\d?\d$/,
       TIME_SEP = ':',
@@ -49,27 +35,33 @@
         return parseInt(str, 10);
       },
       splitAndParse = function (str, sep) {
-        return str.split(sep).map(parseIntBaseTen);
+        var init = str.split(sep).map(parseIntBaseTen);
+        if (init.length === 2) {
+          init.push(0);
+        } else if (init.length !== 3) {
+          init = null;
+        }
+        return init;
       },
       validateTime = function (str) {
-        str = str || this._a;
+        str = str || (this || {})._a;
         if (!str) {
           return false;
         }
         var time = splitAndParse(str, TIME_SEP);
-        return time[0] >= 0 && time[0] <= 23 && time[1] >= 0 && time[1] <= 59 && time[2] >= 0 && time[2] <= 59;
+        return time.length === 3 && time[0] >= 0 && time[0] <= 23 && time[1] >= 0 && time[1] <= 59 && time[2] >= 0 && time[2] <= 59;
       },
       validateIsoDate = function (str) {
-        str = str || this._a;
+        str = str || (this || {})._a;
         if (!str) {
           return false;
         }
         var arr = splitAndParse(str, DATE_SEP);
-        return arr[0] >= 1 && arr[0] <= 9999 && arr[1] >= 1 && arr[1] <= 12 && arr[2] >= 1 && arr[2] <= 31;
+        return arr.length === 3 && arr[0] >= 1 && arr[0] <= 9999 && arr[1] >= 1 && arr[1] <= 12 && arr[2] >= 1 && arr[2] <= 31;
         // TODO: Month lengths and leap years, etc.
       },
       humanTime = function (time) {
-        return pad(time[0]) + TIME_SEP + pad(time[1]) + TIME_SEP + pad(time[2]);
+        return pad(time[0]) + TIME_SEP + pad(time[1]) + (time[2] === 0 ? '' : TIME_SEP + pad(time[2]));
       },
       humanDate = function (date) {
         return pad(date[0], 4) + DATE_SEP + pad(date[1]) + DATE_SEP + pad(date[2]);
@@ -82,15 +74,21 @@
         var jsdate = jsDate(date);
         return humanDate([jsdate.getUTCFullYear(), jsdate.getUTCMonth()+1, jsdate.getUTCDate()]);
       },
-      dateTimeToDate = function (date, time) {
-        var hours, mins, secs, ret, timeOk = validateTime(time);
-        if (!validateDateArray(dateArray)) {
+      dateTimeToDate = function (dateStr, timeStr, isUtc) {
+        var hours, mins, secs, ret, date, time, timeOk = validateTime(timeStr);
+        if (!validateIsoDate(dateStr)) {
           return null;
         }
+        date = splitAndParse(dateStr, DATE_SEP);
+        time = timeOk && splitAndParse(timeStr, TIME_SEP);
         hours = timeOk && time[0] || 0;
         mins = timeOk && time[1] || 0;
         secs = timeOk && time[2] || 0;
-        ret = new Date(dateArray[0], dateArray[1] - 1, dateArray[2], hours, mins, secs);
+        if (isUtc) {
+          ret = new Date(Date.UTC(date[0], date[1] - 1, date[2], hours, mins, secs));
+        } else {
+          ret = new Date(date[0], date[1] - 1, date[2], hours, mins, secs);
+        }
         return ret;
       },
       compareTime = function (timeA, timeB) {
