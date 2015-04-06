@@ -66,13 +66,15 @@
       humanDate = function (date) {
         return pad(date[0], 4) + DATE_SEP + pad(date[1]) + DATE_SEP + pad(date[2]);
       },
-      dateToTime = function (date) {
-        var jsdate = jsDate(date);
-        return humanTime([jsdate.getUTCHours(), jsdate.getUTCMinutes(), jsdate.getUTCSeconds()]);
+      dateToTime = function (date, isUtc) {
+        var jsdate = jsDate(date),
+            getterPrefix = isUtc ? 'getUTC' : 'get';
+        return humanTime([jsdate[getterPrefix + 'Hours'](), jsdate[getterPrefix + 'Minutes'](), jsdate[getterPrefix + 'Seconds']()]);
       },
-      dateToDate = function (date) {
-        var jsdate = jsDate(date);
-        return humanDate([jsdate.getUTCFullYear(), jsdate.getUTCMonth()+1, jsdate.getUTCDate()]);
+      dateToDate = function (date, isUtc) {
+        var jsdate = jsDate(date),
+            getterPrefix = isUtc ? 'getUTC' : 'get';
+        return humanDate([jsdate[getterPrefix + 'FullYear'](), jsdate[getterPrefix + 'Month']()+1, jsdate[getterPrefix + 'Date']()]);
       },
       dateTimeToDate = function (dateStr, timeStr, isUtc) {
         var hours, mins, secs, ret, date, time, timeOk = validateTime(timeStr);
@@ -147,7 +149,7 @@
         if (dateLikeRegex.test(str)) {
           return humanDate(splitAndParse(str, DATE_SEP));
         }
-        return dateToDate(new Date(str + ' UTC'));
+        return dateToDate(new Date(str + ' UTC'), true);
       };
 
   return {
