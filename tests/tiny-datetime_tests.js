@@ -40,6 +40,16 @@ describe('tiny datetime api', function () {
         expect(tiny.time.parse('7:09:45pm')).toBe('19:09:45');
       });
     });
+    describe('fromDate()', function () {
+      it('returns provided local time by default', function () {
+        var src = new Date(2015, 8, 27, 0, 0, 0);
+        expect(tiny.time.fromDate(src)).toBe('00:00');
+      });
+      it('returns UTC time if specified', function () {
+        var src = new Date(Date.UTC(2015, 8, 27, 0, 0, 0));
+        expect(tiny.time.fromDate(src, true)).toBe('00:00');
+      });
+    });
   });
 
   describe('toDate()', function () {
